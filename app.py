@@ -1,3 +1,5 @@
+import random
+
 from flask import Flask, render_template, jsonify
 
 app = Flask(__name__)
@@ -18,7 +20,12 @@ question_bank = [
     { "q": "Before Mount Everest was discovered, what was the highest mountain in the world?", "a": ["K2", "Mount Kilimanjaro", "Mount Everest", "Kangchenjunga"], "correct": 2 },
     { "q": "A plane crashes on the border of the US and Canada. Where do they bury the survivors?", "a": ["US", "Canada", "In the border zone", "You don't bury survivors"], "correct": 3 },
     { "q": "If a rooster lays an egg on the top of a slanted roof, which way will it roll?", "a": ["Left", "Right", "Roosters don't lay eggs", "Downwards"], "correct": 2 },
-    { "q": "What is heavy forward, but backward is NOT?", "a": ["Ton", "Star", "Weight", "Shadow"], "correct": 0 }
+    { "q": "What is heavy forward, but backward is NOT?", "a": ["Ton", "Star", "Weight", "Shadow"], "correct": 0 },
+    { "q": "What comes next in the pattern: 1, 4, 9, 16, 25, ...?", "a": ["30", "35", "36", "49"], "correct": 2 },
+    { "q": "If A = 1, B = 2, C = 3, what is the value of FACE?", "a": ["15", "18", "12", "14"], "correct": 0 },
+    { "q": "Which shape has 8 sides?", "a": ["Hexagon", "Octagon", "Pentagon", "Heptagon"], "correct": 1 },
+    { "q": "If 3 cats catch 3 mice in 3 minutes, how many cats are needed to catch 100 mice in 100 minutes?", "a": ["3", "100", "30", "1"], "correct": 0 },
+    { "q": "Which number is the prime number?", "a": ["9", "15", "21", "17"], "correct": 3 }
 ]
 
 @app.route('/')
@@ -27,8 +34,9 @@ def index():
 
 @app.route('/get_questions')
 def get_questions():
-    # This route allows the JavaScript to fetch the data
-    return jsonify(question_bank)
+    questions = question_bank.copy()
+    random.shuffle(questions)
+    return jsonify(questions)
 
 if __name__ == '__main__':
     app.run(debug=True)

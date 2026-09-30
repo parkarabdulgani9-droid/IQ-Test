@@ -1,7 +1,7 @@
 let questionBank = [];
 let currentIdx = 0;
 let score = 0;
-let timeLeft = 10;
+let timeLeft = 15;
 let timer;
 
 // Fetch questions from Flask API
@@ -40,7 +40,7 @@ function loadQuestion() {
 }
 
 function startTimer() {
-    timeLeft = 10;
+    timeLeft = 15;
     document.getElementById('timer').innerText = `Time: ${timeLeft}s`;
     clearInterval(timer);
     timer = setInterval(() => {
@@ -56,6 +56,12 @@ function handleSelect(idx, btn) {
     const buttons = document.querySelectorAll('.option-btn');
     
     buttons.forEach(b => b.disabled = true);
+
+    if (idx === -1) {
+        currentIdx++;
+        loadQuestion();
+        return;
+    }
 
     if (idx === correct) {
         if (btn) btn.classList.add('correct');
