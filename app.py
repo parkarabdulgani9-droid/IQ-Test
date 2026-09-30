@@ -4,16 +4,21 @@ app = Flask(__name__)
 
 # The Question Bank is now stored on the server
 question_bank = [
-    { "q": "Next in sequence: 2, 6, 12, 20, 30, ...?", "a": ["36", "40", "42", "48"], "correct": 2 },
-    { "q": "If CAT = 24, then DOG = ?", "a": ["26", "27", "25", "28"], "correct": 0 },
-    { "q": "Rearrange 'CIFAIPIC' to find a(n):", "a": ["Animal", "City", "Ocean", "Country"], "correct": 2 },
-    { "q": "Book is to Read as Knife is to:", "a": ["Sharp", "Cut", "Steel", "Kitchen"], "correct": 1 },
-    { "q": "What is 15% of 200?", "a": ["25", "30", "35", "40"], "correct": 1 },
-    { "q": "Next in sequence: 8, 27, 64, 125, ...?", "a": ["196", "216", "256", "225"], "correct": 1 },
-    { "q": "Which does not belong?", "a": ["Apple", "Carrot", "Banana", "Grape"], "correct": 1 },
-    { "q": "A train goes 100km in 2 hours. Speed?", "a": ["40 km/h", "50 km/h", "60 km/h", "70 km/h"], "correct": 1 },
-    { "q": "Which is the odd one out?", "a": ["Gold", "Silver", "Iron", "Bronze"], "correct": 3 },
-    { "q": "If FLOWER = GMRQYG, then FRUIT = ?", "a": ["GSVJT", "GSUJT", "HSVJT", "GSVJU"], "correct": 0 }
+    { "q": "If a doctor gives you 3 pills and tells you to take one every half hour, how long will they last?", "a": ["30 minutes", "60 minutes", "90 minutes", "120 minutes"], "correct": 1 },
+    { "q": "A father and son get in a car crash. The father dies. The son is rushed to the hospital. The surgeon says, 'I can't operate on him, he's my son!' Who is the surgeon?", "a": ["Grandfather", "Mother", "Uncle", "Stepfather"], "correct": 1 },
+    { "q": "How many months have 28 days?", "a": ["1", "2", "6", "12"], "correct": 3 },
+    { "q": "If you are running in a race and you pass the person in 2nd place, what place are you in?", "a": ["1st", "2nd", "3rd", "Last"], "correct": 1 },
+    { "q": "A farmer has 17 sheep, and all but 9 die. How many sheep are left alive?", "a": ["8", "9", "0", "17"], "correct": 1 },
+    { "q": "Divide 30 by 1/2 and add 10. What is the answer?", "a": ["25", "40", "70", "20"], "correct": 2 },
+    { "q": "If 5 cats can catch 5 mice in 5 minutes, how many minutes does it take 100 cats to catch 100 mice?", "a": ["100 minutes", "5 minutes", "1 minute", "50 minutes"], "correct": 1 },
+    { "q": "Some months have 31 days, others have 30. How many have 31?", "a": ["5", "6", "7", "12"], "correct": 2 },
+    { "q": "Mary's father has 5 daughters: Nana, Nene, Nini, Nono. What is the 5th daughter's name?", "a": ["Nunu", "Mary", "Nina", "Nono"], "correct": 1 },
+    { "q": "How many 0.5cm x 0.5cm square tiles do you need to cover a 1cm x 1cm square?", "a": ["2", "4", "8", "16"], "correct": 1 },
+    { "q": "If you have 6 apples and you take away 4, how many do you have?", "a": ["2", "4", "6", "0"], "correct": 1 },
+    { "q": "Before Mount Everest was discovered, what was the highest mountain in the world?", "a": ["K2", "Mount Kilimanjaro", "Mount Everest", "Kangchenjunga"], "correct": 2 },
+    { "q": "A plane crashes on the border of the US and Canada. Where do they bury the survivors?", "a": ["US", "Canada", "In the border zone", "You don't bury survivors"], "correct": 3 },
+    { "q": "If a rooster lays an egg on the top of a slanted roof, which way will it roll?", "a": ["Left", "Right", "Roosters don't lay eggs", "Downwards"], "correct": 2 },
+    { "q": "What is heavy forward, but backward is NOT?", "a": ["Ton", "Star", "Weight", "Shadow"], "correct": 0 }
 ]
 
 @app.route('/')

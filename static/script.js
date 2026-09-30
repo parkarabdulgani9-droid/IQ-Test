@@ -1,7 +1,7 @@
 let questionBank = [];
 let currentIdx = 0;
 let score = 0;
-let timeLeft = 20;
+let timeLeft = 10;
 let timer;
 
 // Fetch questions from Flask API
@@ -40,7 +40,7 @@ function loadQuestion() {
 }
 
 function startTimer() {
-    timeLeft = 20;
+    timeLeft = 10;
     document.getElementById('timer').innerText = `Time: ${timeLeft}s`;
     clearInterval(timer);
     timer = setInterval(() => {
