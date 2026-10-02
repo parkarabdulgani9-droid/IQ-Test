@@ -16,11 +16,18 @@
         body {
             background: var(--bg-gradient);
             background-attachment: fixed;
+            background-size: 160% 160%;
+            animation: gradientDrift 28s ease-in-out infinite alternate;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
+        }
+
+        @keyframes gradientDrift {
+            from { background-position: 0% 0%; }
+            to { background-position: 100% 100%; }
         }
 
         .container {
