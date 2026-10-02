@@ -1,6 +1,16 @@
 import random
-
-from flask import Flask, render_template, jsonify
+import sqlite3
+import os
+from flask import (
+    Flask,
+    render_template,
+    request,
+    jsonify,
+    redirect,
+    url_for,
+    session
+)
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 
@@ -28,15 +38,107 @@ question_bank = [
     { "q": "Which number is the prime number?", "a": ["9", "15", "21", "17"], "correct": 3 }
 ]
 
-@app.route('/')
-def index():
-    return render_template('index.html')
+app.secret_key = os.environ.get("SECRET_KEY", "change-this-secrect-key")
+DATABASE = "database.db"
 
-@app.route('/get_questions')
-def get_questions():
-    questions = question_bank.copy()
-    random.shuffle(questions)
-    return jsonify(questions)
+def get_db():
+    conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+def init_db():
+
+    conn = get_db()
+
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL,
+            average_iq REAL DEFAULT 0,
+            highest_iq REAL DEFAULT 0
+        )
+    """)
+
+    conn.commit()
+    conn.close()
+
+@app.route("/")
+def home():
+    return redirect(url_for("login"))
+
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    error = None
+
+    if request.method == "POST":
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "")
+        if not username or not password:
+            error = "Username and password are required."
+        elif len(password) < 6:
+            error = "Password must be at least 6 characters long."
+        else:
+            conn = get_db()
+            existing = conn.execute("SELECT id FROM users WHERE username = ?", (username,)
+            ).fetchone()
+            if existing:
+                error = "Username already exists."
+            else:
+                password_hash = generate_password_hash(password)
+                conn.execute("INSERT INTO users (username, password_hash) VALUES (?, ?)", (username, password_hash))
+
+                conn.commit()
+                conn.close()
+
+                return redirect(url_for("login"))
+
+            conn.close()
+
+    return render_template("register.html", error=error)
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    error = None
+    if request.method == "POST":
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "")
+        conn = get_db()
+        user = conn.execute(
+            "SELECT * FROM users WHERE username = ?", (username,)
+        ).fetchone()
+        conn.close()
+        if user and check_password_hash(user["password_hash"], password):
+            session["user_id"] = user["id"]
+            return redirect(url_for("dashboard"))
+        else:
+            error = "Invalid username or password."
+    return render_template("login.html", error=error)
+
+@app.route("/quiz")
+def quiz():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+    questions = random.sample(question_bank, 10)
+    return render_template("quiz.html", questions=questions)
+
+@app.route("/dashboard")
+def dashboard():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+    user_id = session["user_id"]
+    conn = get_db()
+    user = conn.execute(
+        "SELECT * FROM users WHERE id = ?", (user_id,)
+    ).fetchone()
+    conn.close()
+    return render_template("dashboard.html", user=user)
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("login"))
 
 if __name__ == '__main__':
+    init_db()
     app.run(debug=True)

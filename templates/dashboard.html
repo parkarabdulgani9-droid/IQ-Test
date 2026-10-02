@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - ProLogic IQ</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome {{ user["username"] }}</h1>
+        <p>Your ProLogic IQ Dashboard</p>
+        <div class="dashboard-section">
+            <a href="{{ url_for('quiz') }}" class="dashboard-button">START QUIZ</a>
+        </div>
+        <div class="stats">
+            <div class="stat-card">
+                <h3>Average IQ</h3>
+                <div clas="stat-value">
+                    {{ user["average_iq"] }}
+                </div>
+            </div>
+            <div class="stat-card">
+                <h3>Highest IQ</h3>
+                <div class="stat-vlaue">
+                    {{ user["highest_iq"]}}
+                </div>
+            </div>
+        </div>
+
+        <div class="dashbard-section">
+            <h2>Account Settings</h2>
+            <a href="#" class="settings-button">Change Username</a>
+            <a href="#" class="settings-button">Change Password</a>
+            <a href="{{ url_for('logout')}}" class="settings-button logout-button">Logout</a>
+        </div>
+    </div>
+</body>
+</html>

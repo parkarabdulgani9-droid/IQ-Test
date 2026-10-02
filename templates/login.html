@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - ProLogic IQ</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>ProLogic IQ</h1>
+        <p>Login to your account</p>
+
+        {% if error %}
+        <div class="error-message">{{error}}</div>
+        {% endif %}
+
+        <form method="POST">
+            <input type="text" name="username" placeholder="Username" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <button type="submit">LOGIN</button>
+        </form>
+        <p>Don't have an account?
+            <a href="{{url_for('register')}}">Create Account</a>
+        </p>
+    </div>
+</body>
+</html>
