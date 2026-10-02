@@ -129,7 +129,7 @@ def get_questions():
 def quiz():
     if "user_id" not in session:
         return redirect(url_for("login"))
-    questions = random.sample(question_bank, 10)
+    questions = random.sample(question_bank, 20)
     return render_template("quiz.html", questions=questions)
 
 @app.route("/dashboard")
@@ -207,6 +207,64 @@ def change_password():
 def logout():
     session.clear()
     return redirect(url_for("login"))
+
+@app.route("/save_result", methods=["GET", "POST"])
+def save_result():
+    if "user_id" not in session:
+        return jsonify({
+            "error": "Unauthorized"
+        }), 401
+
+    data = request.get_json()
+    score = float(data.get("score", 0))
+    conn = get_db()
+    user = conn.execute(
+        "SELECT average_iq, highest_iq FROM users WHERE id = ?",
+        (session["user_id"],)
+    ).fetchone()
+    if user is None:
+        conn.close()
+        return jsonify({
+            "error": "User not found"
+        }), 404
+
+    old_average = user["average_iq"]
+    old_highest = user["highest_iq"]
+
+    conn.execute(""
+    "CREATE TABLE IF NOT EXITS quiz_results(" \
+    "id INTEGER PRIMARY KEY AUTOINCREMENT," \
+    "user_id INTEGER NOT NULL," \
+    "score REAL NOT NULL," \
+    "FOREIGN KEY (user_id) REFERENCES users(id)" \
+    ")")
+
+    conn.execute(
+        "INSERT INTO quiz_results (user_id, score) VALUES (?, ?)",
+        (session["user_id"], score)
+    )
+    result = conn.execute(
+        "SELECT AVG(score), MAX(score) FROM quiz_results WHERE user_id = ?",
+        (session["user_id"],)
+    ).fetchone()
+
+    average_score = result[0] or 0
+    highest_score = result[1] or 0
+
+    conn.execute("""UPDATE users SET average_iq = ?, highest_iq = ? WHERE id = ?""",(
+        average_score,
+        highest_score,
+        session["user_id"]
+    ))
+
+    conn.commit()
+    conn.close()
+
+    return jsonify({
+        "success": True,
+        "average_iq": average_score,
+        "highest_iq": highest_score
+    })
 
 if __name__ == '__main__':
     init_db()

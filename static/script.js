@@ -2,7 +2,7 @@ let questionBank = [];
 let currentIdx = 0;
 let score = 0;
 let timeLeft = 15;
-let timer = null;
+let timer;
 let answered = false;
 
 async function startGame() {
@@ -12,12 +12,16 @@ async function startGame() {
             throw new Error("Unable to load questions.");
         }
         questionBank = await response.json();
-        questionBank = questionBank.slice(0, 10);
-        currentIdx = 0;
-        score = 0;
+        if(!Array.isArray(questionBank) || questionBank.length === 0){
+            throw new Error("No questions available")   
+        }
+
         document.getElementById("start-screen").classList.add("hidden");
         document.getElementById("result-screen").classList.add("hidden");
         document.getElementById("quiz-screen").classList.remove("hidden");
+
+        currentIdx = 0;
+        score = 0;
 
         loadQuestion();
 
@@ -37,7 +41,7 @@ function loadQuestion() {
     document.getElementById("question-text").innerText = data.q;
     document.getElementById("question-counter").innerText = `Question ${currentIdx + 1}/${questionBank.length}`;
     const progress = (currentIdx / questionBank.length) * 100;
-    document.getElementById("progress-fill").style.width = `${progress}%`;
+    document.getElementById("progress-fill").style.width = `${(currentIdx / questionBank.length) * 100}%`;
     const container = document.getElementById("options-container");
 
     container.innerHTML = "";
@@ -79,7 +83,9 @@ function handleSelect(index, selectedButton = null) {
     });
 
     if (index === -1) {
-        buttons[correctIndex].classList.add("correct");
+        currentIdx++;
+        loadQuestion();
+        return;
     }
     else if (index === correctIndex) {
         selectedButton.classList.add("correct");
@@ -95,7 +101,7 @@ function handleSelect(index, selectedButton = null) {
     }, 1000);
 }
 
-function endLevel() {
+async function endLevel() {
 
     clearInterval(timer);
 
@@ -111,6 +117,23 @@ function endLevel() {
     } else {
         message = "Keep training your brain!";
     }
-    document.getElementById("feedback-text").innerText =
-        message;
+    document.getElementById("feedback-text").innerText = message;
+
+    try{
+        const response = await fetch('/save_result',{
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                score: score
+            })
+        });
+        const data = await response.json();
+        if(!response.ok){
+            console.log("Failed to save result", data);
+        }
+    } catch (error){
+        console.error("Error saving result: ", error);
+    }
 }
