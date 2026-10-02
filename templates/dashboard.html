@@ -8,8 +8,12 @@
 </head>
 <body>
     <div class="container">
+        <div class="brand">
+            <span class="brand">PROLOGIC</span>
+            <span class="brand-highlight">IQ</span>
+        </div>
         <h1>Welcome {{ user["username"] }}</h1>
-        <p>Your ProLogic IQ Dashboard</p>
+        <p>Your personal inteliigence text dashboard</p>
         <div class="dashboard-section">
             <a href="{{ url_for('quiz') }}" class="dashboard-button">START QUIZ</a>
         </div>
@@ -30,9 +34,9 @@
 
         <div class="dashbard-section">
             <h2>Account Settings</h2>
-            <a href="#" class="settings-button">Change Username</a>
-            <a href="#" class="settings-button">Change Password</a>
-            <a href="{{ url_for('logout')}}" class="settings-button logout-button">Logout</a>
+            <a href="{{ url_for('change_username') }}" class="settings-button">Change Username</a>
+            <a href="{{ url_for('change_password') }}" class="settings-button">Change Password</a>
+            <a href="{{ url_for('logout') }}" class="settings-button logout-button">Logout</a>
         </div>
     </div>
 </body>

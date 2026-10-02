@@ -115,6 +115,16 @@ def login():
             error = "Invalid username or password."
     return render_template("login.html", error=error)
 
+@app.route("/get_questions")
+def get_questions():
+    if "user_id" not in session:
+        return jsonify({
+            "error" : "Unauthorized"
+        }), 401
+    questions = question_bank.copy()
+    random.shuffle(questions)
+    return jsonify(questions)
+
 @app.route("/quiz")
 def quiz():
     if "user_id" not in session:
@@ -133,6 +143,65 @@ def dashboard():
     ).fetchone()
     conn.close()
     return render_template("dashboard.html", user=user)
+
+@app.route("/change-username", methods=["GET", "POST"])
+def change_username():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+    error = None
+    if request.method == "POST":
+        new_username = request.form.get("username", "").strip()
+        if not new_username:
+            error = "New username is required."
+        else:
+            conn = get_db()
+            existing = conn.execute(
+                "SELECT id FROM users WHERE username = ? AND id != ?",
+                (new_username, session["user_id"])
+            ).fetchone()
+            if existing:
+                error = "Username already exists."
+            else:
+                conn.execute(
+                    "UPDATE users SET username = ? WHERE id = ?",
+                    (new_username, session["user_id"])
+                )
+                conn.commit()
+                conn.close()
+                return redirect(url_for("dashboard"))
+            conn.close()
+    return render_template("change_username.html", error=error)
+
+@app.route("/change-password", methods=["GET", "POST"])
+def change_password():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+    error = None
+    if request.method == "POST":
+        current_password = request.form.get("current_password")
+        new_password = request.form.get("new_password")
+        confirm_password = request.form.get("confirm_password")
+
+        conn = get_db()
+        user = conn.execute(
+            "SELECT * FROM users WHERE id = ?", (session["user_id"],)
+        ).fetchone()
+        if not check_password_hash(user["password_hash"], current_password):
+            error = "current password is incorrect."
+        elif not new_password:
+            error = "new password cannot be empty."
+        elif new_password != confirm_password:
+            error = "new passwords do not match."
+        else:
+            password_hash = generate_password_hash(new_password)
+            conn.execute("UPDATE users SET password_hash = ? WHERE id = ?",
+                         (password_hash, session["user_id"]))
+            conn.commit()
+            conn.close()
+            return redirect(url_for("dashboard"))
+        conn.close()
+    return render_template("change_password.html", error = error)
+        
 
 @app.route("/logout")
 def logout():
