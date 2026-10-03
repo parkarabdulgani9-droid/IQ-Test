@@ -208,50 +208,54 @@ def logout():
     session.clear()
     return redirect(url_for("login"))
 
-@app.route("/save_result", methods=["GET", "POST"])
+@app.route("/save_result", methods=["POST"])
 def save_result():
+
     if "user_id" not in session:
-        return jsonify({
-            "error": "Unauthorized"
-        }), 401
+        return jsonify({"error": "Unauthorized"}), 401
 
     data = request.get_json()
-    score = float(data.get("score", 0))
+
+    if not data or "score" not in data:
+        return jsonify({"error": "Score missing"}), 400
+
+    score = float(data["score"])
+
     conn = get_db()
-    user = conn.execute(
-        "SELECT average_iq, highest_iq FROM users WHERE id = ?",
-        (session["user_id"],)
-    ).fetchone()
-    if user is None:
-        conn.close()
-        return jsonify({
-            "error": "User not found"
-        }), 404
 
-    old_average = user["average_iq"]
-    old_highest = user["highest_iq"]
-
-    conn.execute(""
-    "CREATE TABLE IF NOT EXITS quiz_results(" \
-    "id INTEGER PRIMARY KEY AUTOINCREMENT," \
-    "user_id INTEGER NOT NULL," \
-    "score REAL NOT NULL," \
-    "FOREIGN KEY (user_id) REFERENCES users(id)" \
-    ")")
+    # Save this attempt
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS quiz_results (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            score REAL NOT NULL
+        )
+    """)
 
     conn.execute(
         "INSERT INTO quiz_results (user_id, score) VALUES (?, ?)",
         (session["user_id"], score)
     )
-    result = conn.execute(
-        "SELECT AVG(score), MAX(score) FROM quiz_results WHERE user_id = ?",
-        (session["user_id"],)
-    ).fetchone()
 
-    average_score = result[0] or 0
-    highest_score = result[1] or 0
+    # Calculate statistics
+    stats = conn.execute("""
+        SELECT
+            AVG(score) AS average_score,
+            MAX(score) AS highest_score
+        FROM quiz_results
+        WHERE user_id = ?
+    """, (session["user_id"],)).fetchone()
 
-    conn.execute("""UPDATE users SET average_iq = ?, highest_iq = ? WHERE id = ?""",(
+    average_score = stats["average_score"] or 0
+    highest_score = stats["highest_score"] or 0
+
+    # Update user
+    conn.execute("""
+        UPDATE users
+        SET average_iq = ?,
+            highest_iq = ?
+        WHERE id = ?
+    """, (
         average_score,
         highest_score,
         session["user_id"]
