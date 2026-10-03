@@ -57,11 +57,8 @@ function loadQuestion() {
 }
 
 function startTimer() {
-<<<<<<< HEAD
-=======
     timeLeft = 20;
     document.getElementById('timer').innerText = `Time: ${timeLeft}s`;
->>>>>>> f5de1bf (My changes)
     clearInterval(timer);
     timeLeft = 15;
     document.getElementById("timer").innerText = `Time: ${timeLeft}s`;
