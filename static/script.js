@@ -1,7 +1,7 @@
 let questionBank = [];
 let currentIdx = 0;
 let score = 0;
-let timeLeft = 15;
+let timeLeft = 20;
 let timer;
 let answered = false;
 
@@ -57,6 +57,8 @@ function loadQuestion() {
 }
 
 function startTimer() {
+    timeLeft = 20;
+    document.getElementById('timer').innerText = `Time: ${timeLeft}s`;
     clearInterval(timer);
     timeLeft = 15;
     document.getElementById("timer").innerText = `Time: ${timeLeft}s`;
