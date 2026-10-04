@@ -270,6 +270,123 @@ def save_result():
         "highest_iq": highest_score
     })
 
+@app.route("/api/dashboard")
+def api_dashboard():
+
+    if "user_id" not in session:
+        return jsonify({
+            "error": "Unauthorized"
+        }), 401
+
+    conn = get_db()
+
+    user = conn.execute(
+        """
+        SELECT id, username, average_iq, highest_iq
+        FROM users
+        WHERE id = ?
+        """,
+        (session["user_id"],)
+    ).fetchone()
+
+    conn.close()
+
+    if user is None:
+        return jsonify({
+            "error": "User not found"
+        }), 404
+
+    return jsonify({
+        "id": user["id"],
+        "username": user["username"],
+        "average_iq": user["average_iq"],
+        "highest_iq": user["highest_iq"]
+    })
+
+@app.route("/api/questions")
+def api_questions():
+
+    if "user_id" not in session:
+        return jsonify({
+            "error": "Unauthorized"
+        }), 401
+
+    questions = question_bank.copy()
+    random.shuffle(questions)
+
+    return jsonify(questions)
+
+@app.route("/api/result", methods=["POST"])
+def api_result():
+
+    if "user_id" not in session:
+        return jsonify({
+            "error": "Unauthorized"
+        }), 401
+
+    data = request.get_json()
+
+    if not data or "score" not in data:
+        return jsonify({
+            "error": "Score missing"
+        }), 400
+
+    score = float(data["score"])
+
+    conn = get_db()
+
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS quiz_results (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            score REAL NOT NULL
+        )
+    """)
+
+    conn.execute(
+        """
+        INSERT INTO quiz_results (user_id, score)
+        VALUES (?, ?)
+        """,
+        (session["user_id"], score)
+    )
+
+    stats = conn.execute(
+        """
+        SELECT AVG(score) AS average_score,
+               MAX(score) AS highest_score
+        FROM quiz_results
+        WHERE user_id = ?
+        """,
+        (session["user_id"],)
+    ).fetchone()
+
+    average_score = stats["average_score"] or 0
+    highest_score = stats["highest_score"] or 0
+
+    conn.execute(
+        """
+        UPDATE users
+        SET average_iq = ?,
+            highest_iq = ?
+        WHERE id = ?
+        """,
+        (
+            average_score,
+            highest_score,
+            session["user_id"]
+        )
+    )
+
+    conn.commit()
+    conn.close()
+
+    return jsonify({
+        "success": True,
+        "average_iq": average_score,
+        "highest_iq": highest_score
+    })
+
 if __name__ == '__main__':
     init_db()
     app.run(debug=True)
